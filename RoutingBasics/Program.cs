@@ -1,9 +1,9 @@
-using RoutingBasics.CustomConstraints;
+using RoutingBasics;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRouting(options =>
 {
-    options.ConstraintMap.Add("months", typeof(MonthsCustomConstraint));
+    options.ConstraintMap.Add("month", typeof(MonthConstraint));
 });
 var app = builder.Build();
 
@@ -16,15 +16,12 @@ app.UseEndpoints(endpoints =>
         context.Response.WriteAsync("Hello Momin!");
 
     });
-    endpoints.Map("sales-report/{year:int:min(19000)}/{month:months}", async context =>
+    //Sales-report/month/year
+    endpoints.Map("sales-report/{month:month}/{year:range(1900,2100)}", async context =>
     {
-        int year = Convert.ToInt32(context.Request.RouteValues["year"]);
         string? month = Convert.ToString(context.Request.RouteValues["month"]);
-        if(month=="apr" || month=="jul" || month == "oct" || month == "jan")
-        {
-            await context.Response.WriteAsync($"Sales Report for {month} {year}");
-        }
-
+        int? year = Convert.ToInt32(context.Request.RouteValues["year"]);
+        await context.Response.WriteAsync($"Sales Report for {month}-{year}");
     });
 });
 app.Run(async context =>
