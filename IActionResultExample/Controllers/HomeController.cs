@@ -4,7 +4,7 @@ namespace IActionResultExample.Controllers
 {
     public class HomeController: Controller
     {
-        [Route("book")]
+        [Route("bookstore")]
         //Route book?isloggedin=true&bookid=1
         public IActionResult Index()
         {
@@ -27,7 +27,7 @@ namespace IActionResultExample.Controllers
                 //return Content("Book ID cannot be less than or equal to zero.");
                 return BadRequest("Book ID cannot be less than or equal to zero.");
             }
-            if (bookId >1000)
+            if (bookId >=1000)
             {
                 //Response.StatusCode = 400; // Bad Request
                 //return Content("Book ID cannot be greater than 1000.");
@@ -40,7 +40,25 @@ namespace IActionResultExample.Controllers
                 //return Content("You are not authorized to view this book.");
                 return Unauthorized("You are not authorized to view this book.");
             }
-            return File("/sample.pdf", "application/pdf");
+            //return File("/sample.pdf", "application/pdf");
+
+            //return new RedirectToActionResult("Books", "Store", new { }); //302 found
+            //return new RedirectToActionResult("Books", "Store", new { }, permanent:true);//301 Moved permanentyl
+
+            //return RedirectToAction("Books", "Store", new { id = bookId });
+            //return RedirectToActionPermanent("Books", "Store", new { id = bookId }); //Better to use this for permanent redirects
+
+            //return new LocalRedirectResult($"store/books/{bookId}"); //302 found
+
+            //return  LocalRedirectPermanent($"/store/books/{bookId}");
+
+            //return Redirect($"store/books/{bookId}");
+
+            return RedirectPermanent($"store/books/{bookId}");
+
+
+
+
         }
     }
 }
