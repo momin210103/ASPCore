@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation; // namespace for Attribute
+using ModelValidationExample.CustomValidator;
 namespace ModelValidationExample.Models
+
 {
     public class Person
     {
@@ -30,6 +32,11 @@ namespace ModelValidationExample.Models
 
         [Range(0,999.99, ErrorMessage = "{0} should be between {1}Tk and {2}Tk")]
         public Double? Price { get; set; }
+
+
+        //[YearValidator(2005,ErrorMessage = "should be less than {0}")]
+        [YearValidator(2005)]
+        public DateTime DateOfBirth { get; set; } 
 
         public override string ToString()
         {
