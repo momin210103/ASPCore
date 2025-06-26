@@ -1,11 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ModelValidationExample.Models;
+using ModelValidationExample.CustomModelBinder;
 
 namespace ModelValidationExample.Controllers
 {
     [Route("register")]
     public class HomeController: Controller
     {
+
+        //[Bind(nameof(Person.PersonName), nameof(Person.Email), nameof(Person.Password), nameof(Person.ConfirmPassword))]
+        //[ModelBinder(BinderType = typeof(PersonModelBinder)]
         public IActionResult Index(Person person)
         {
             if (!ModelState.IsValid)
