@@ -1,9 +1,27 @@
-﻿<!DOCTYPE html>
+﻿@using ViewExample.Models
+@{
+    string appTitle = "ASP.Net Core APP";
+	Person person = new Person()
+			{
+				name = "John",
+				age = null
+			};
+}
+}
+
+<!DOCTYPE html>
 <html>
-    <head><title>ASP.Net Core APP</title>
+    <head><title>@appTitle</title>
         <meta charset="utf-8"/>
     </head>
     <body>
-        Welcome
+        <h1>Welcome</h1>
+        <h2>Name: @person.name</h2>
+        @if(person.age !=null){
+        <h2>Age: @person.age</h2>
+        } else{
+            <h2>Age is Unkwon</h2>
+        }
+	
     </body>
 </html>
