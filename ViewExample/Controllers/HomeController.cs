@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.Elfie.Serialization;
+using ViewExample.Models;
 
 namespace ViewExample.Controllers
 {
@@ -9,22 +10,18 @@ namespace ViewExample.Controllers
         [Route("/")]
         public IActionResult Index()
         {
+            ViewData["appTitle"] = "ASP.NET Core MVC Example";
+            List<Person> people = new List<Person>
+            {
+                new Person (){ name = "Alice", age = 30 },
+                new Person (){ name = "Bob", age = 25 },
+                new Person (){ name = "Charlie", age = 35 }
+
+            };
+            ViewData["people"] = people;
             return View();//Views/Home/Index.cshtml
             //return new ViewResult() { ViewName = "abc" };
         }
-        [Route("home/index2")]
-        public IActionResult Index2()
-        {
-                return View();
-            //return Content("Hello from Index2!");
-            //return View("Index3");//Views/Home/Index.cshtml
-            //return new ViewResult() { ViewName = "abc" };
-        }
-        [Route("home/view")]
-        public IActionResult Index3()
-        {
-            //return View();//Views/Home/Index.cshtml
-            return new ViewResult() { ViewName = "Index2" };
-        }
+
     }
 }
