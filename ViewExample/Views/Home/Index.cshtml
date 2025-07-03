@@ -1,24 +1,25 @@
 ﻿@using ViewExample.Models
+@model IEnumerable<Person>
 
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>@ViewData["appTitle"]</title>
+    <title>@ViewBag.appTitle</title>
         <meta charset="utf-8"/>
         <link href="~/StyleSheet.css" rel="stylesheet"/>
     </head>
     <body>
         <h1>Welcome</h1>
         @{
-            List<Person>? people = (List<Person>?)ViewData["people"];
-            @foreach(Person person in people){
+            // List<Person>? people = (List<Person>?)ViewData["people"];
+            @foreach(Person person in Model){
               
                 <div >
                 <table class="emp-table">
-                    <tbody class="emp-card emp-card:hover">
-                        <tr>
-                            <td class="emp-table td ">@person.name</td>
+                    <tbody class="emp-card emp-container emp-card:hover">
+                        <tr class="emp-row">
+                            <td class=" emp-text-bold emp-col">@person.name</td>
                             <td>@person.age</td>
                         </tr>
                     </tbody>
