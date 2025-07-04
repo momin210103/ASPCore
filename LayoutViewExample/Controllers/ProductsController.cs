@@ -11,9 +11,10 @@ namespace LayoutViewExample.Controllers
         }
 
 
-        [Route("search-produtcs")]
-        public IActionResult Search()
+        [Route("search-produtcs/{ProductId?}")]
+        public IActionResult Search(int? ProductId)
         {
+            ViewBag.ProductId = ProductId;
             return View();
         }
 
