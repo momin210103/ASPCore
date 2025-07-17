@@ -1,0 +1,7 @@
+{
+    "weatherapi": {
+        "ClientId": "REDACTED_CLIENT_ID MyOwnconfig.json",
+        "ClientSecret": "REDACTED_CLIENT_SECRET from MyOnw config.json"
+
+    }
+}
