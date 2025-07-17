@@ -7,11 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.3.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ServiceContracts\ServiceContracts.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="ServiceContracts">
+      <HintPath>..\Services\bin\Debug\net8.0\ServiceContracts.dll</HintPath>
+    </Reference>
     <Reference Include="Services">
       <HintPath>..\Services\bin\Debug\net8.0\Services.dll</HintPath>
     </Reference>

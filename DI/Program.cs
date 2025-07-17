@@ -4,12 +4,18 @@ using Services;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
-builder.Services.Add(new ServiceDescriptor(
-    typeof(ICitiesService),
-    typeof(CitiesService),
-    ServiceLifetime.Transient
+//builder.Services.Add(new ServiceDescriptor(
+//    typeof(ICitiesService),
+//    typeof(CitiesService),
+//    ServiceLifetime.Singleton
 
-    ));
+//    ));
+
+//Shor Hand for the above line
+builder.Services.AddTransient<ICitiesService, CitiesService>();
+//builder.Services.AddScoped<ICitiesService, CitiesService>();
+//builder.Services.AddSingleton<ICitiesService, CitiesService>();
+
 var app = builder.Build();
 
 app.UseStaticFiles();
