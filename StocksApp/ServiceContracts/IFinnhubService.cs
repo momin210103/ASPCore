@@ -2,6 +2,6 @@
 {
     public interface IFinnhubService
     {
-       Task< Dictionary<string,object>?> GetStockPrice(string stockSymbol);
+       Task<Dictionary<string,object>?> GetStockPrice(string stockSymbol);
     }
 }
