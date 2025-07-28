@@ -1,21 +1,24 @@
 ﻿using System.Threading.Tasks;
-
+using System.Text.Json;
+using NewsApp.ServiceContracts;
 namespace NewsApp.Services
 {
-    public class NewsService
+    public class NewsService: INewsService
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        public NewsService(IHttpClientFactory httpClientFactory)
+        private readonly IConfiguration _configuration;
+        public NewsService(IHttpClientFactory httpClientFactory,IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
-        public async Task GetNews()
+        public async Task<Dictionary<string,object>?>GetNews(string symbol)
         {
            using(HttpClient httpClient = _httpClientFactory.CreateClient())
             {
                 HttpRequestMessage httpRequestMessage = new HttpRequestMessage()
                 {
-                    RequestUri = new Uri ("https://finnhub.io/api/v1/company-news?symbol=AAPL&from=2025-01-15&to=2025-02-20&token=d1st5dpr01qhe5rbuq8gd1st5dpr01qhe5rbuq90"),
+                    RequestUri = new Uri ($"https://finnhub.io/api/v1/company-news?symbol={symbol}&from=2025-01-15&to=2025-02-20&token={_configuration["NewsToken"]}"),
                     Method = HttpMethod.Get
                 };
                 HttpResponseMessage htttpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
@@ -23,6 +26,17 @@ namespace NewsApp.Services
                 StreamReader streamReader = new StreamReader(stream);
                 string response = streamReader.ReadToEnd();
 
+                Dictionary<string,object>? responseDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(response);
+               
+                if(responseDictionary == null)
+                {
+                    throw new InvalidOperationException("No response from news");
+                }
+                if (responseDictionary.ContainsKey("error"))
+                {
+                    throw new InvalidOperationException(Convert.ToString(responseDictionary["error"]));
+                }
+                return responseDictionary;
             }
 
         }
