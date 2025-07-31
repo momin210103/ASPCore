@@ -1,53 +1,29 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using CsvHelper;
 using Entities;
+using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 using Services.Helpers;
+using System.IO;
+
 
 namespace Services
 {
     public class PersonsService: IPersonsService
     {
         //private field
-        private readonly List<Person> _persons;
+        private readonly PersonsDbContext _db;
         private readonly ICountriesService _countriesService;
 
         //constructor
-        public PersonsService(bool initialize = true)
+        public PersonsService(PersonsDbContext personsDbContext, ICountriesService countriesService)
         {
-            _persons = new List<Person>();
-            _countriesService = new CountriesService();
-            if (initialize)
-            {
-                //{8DFEF771-748C-4E6B-86EC-E970F4F5633A}
-                //{43F6E3F4-0BC3-4D99-AF10-F0461B492838}
-                //{C0F56314-5E49-4EEA-96F4-67E22DBCCA4F}
-                //{47EE2708-E561-4528-9EA4-6928655A503E}
-                //{D892AFD5-6A61-4F94-BF92-EA90A9D020DB}
-                //{8DEDEC61-0167-4D15-BCAE-1586FCC9FAAE}
-
-                _persons.Add(new Person() { PersonID = Guid.Parse("8DFEF771-748C-4E6B-86EC-E970F4F5633A"), PersonName = "Anabella", Email = "azanre0@rambler.ru", DateOfBirth=DateTime.Parse("1992-04-20"),Gender = "Female", Address = "6079 Arapahoe Hill", ReceiveNewsLetters = true, CountryID = Guid.Parse("68FAEE23-8826-4C0D-8BAC-EDDE5D9C3CBA") });
-
-                _persons.Add(new Person() { PersonID = Guid.Parse("43F6E3F4-0BC3-4D99-AF10-F0461B492838"), PersonName = "Claudian", Email = "cbritch1@apple.com", DateOfBirth = DateTime.Parse("1990-09-15"), Gender = "Male", Address = "60086 Graceland Terrace", ReceiveNewsLetters = false, CountryID = Guid.Parse("C1995F68-5E01-42F2-8CCF-53DEAD12626F") });
-
-
-                /*
-                 ,,,,,
-,,,, ,
-Cori,cabbs2@tiny.cc,1995-03-13,Male,70 Rusk Junction,true
-Gearalt,gfarfolomeev3@blogspot.com,1991-04-09,Male,1 Fallview Court,false
-Matilda,mwiggins4@trellian.com,1993-05-19,Female,8 New Castle Circle,false
-Carleton,cnobles5@ted.com,1993-06-23,Male,23148 Starling Crossing,false
-Levin,lchillingworth6@feedburner.com,1992-02-03,Male,3875 Bartelt Center,false
-Llewellyn,lmonkhouse7@usda.gov,1990-12-26,Male,0 Carberry Circle,false
-Zena,zscragg8@sohu.com,1995-12-23,Female,89824 Anzinger Way,true
-Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
-                 */
-
-
-            }
+            _db = personsDbContext;
+            _countriesService = countriesService;
         }
 
 
@@ -77,7 +53,8 @@ Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
             person.PersonID = Guid.NewGuid();
 
             //add person object to persons list
-            _persons.Add(person);
+            _db.Persons.Add(person);
+            _db.SaveChanges();
 
             //convert the Person object into PersonResponse type
             return ConvertPersonToPersonResponse(person);
@@ -85,14 +62,16 @@ Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
 
         public List<PersonResponse> GetAllPersons()
         {
-            return _persons.Select(temp => temp.ToPersonResponse()).ToList();
+            //return _db.Persons.Select(temp => temp.ToPersonResponse()).ToList();
+            var perosns = _db.Persons.Include("Country").ToList();
+            return _db.sp_GetAllPersons().Select(temp => ConvertPersonToPersonResponse(temp)).ToList();
         }
 
         public PersonResponse? GetPersonByPersonID(Guid? personID)
         {
             if (personID == null) return null;
 
-            Person? person = _persons.FirstOrDefault(temp => temp.PersonID == personID);
+            Person? person = _db.Persons.FirstOrDefault(temp => temp.PersonID == personID);
 
             if(person == null) return null;
 
@@ -205,7 +184,7 @@ Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
             ValidationHelper.ModelValidation(personUpdateRequest);
 
             //get matching person object to update
-            Person? matchingPerson = _persons.FirstOrDefault(temp => temp.PersonID == personUpdateRequest.PersonID);
+            Person? matchingPerson = _db.Persons.FirstOrDefault(temp => temp.PersonID == personUpdateRequest.PersonID);
             if (matchingPerson == null)
             {
                 throw new ArgumentException("Given person id doesn't exist");
@@ -220,6 +199,8 @@ Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
             matchingPerson.Address = personUpdateRequest.Address;
             matchingPerson.ReceiveNewsLetters = personUpdateRequest.ReceiveNewsLetters;
 
+            _db.SaveChanges();
+
             return matchingPerson.ToPersonResponse();
 
         }
@@ -231,13 +212,36 @@ Marie,mballeine9@about.me,1991-02-23,Female,913 Esch Terrace,false
                 throw new ArgumentNullException(nameof(personID));
             }
 
-            Person? person = _persons.FirstOrDefault(temp => temp.PersonID == personID);
+            Person? person = _db.Persons.FirstOrDefault(temp => temp.PersonID == personID);
             if (person == null)
                 return false;
 
-            _persons.RemoveAll(temp => temp.PersonID == personID);
+            _db.Persons.Remove(_db.Persons.First(temp => temp.PersonID == personID));
+            _db.SaveChanges();
 
             return true;
+        }
+
+
+        //CSV File
+        public Task<MemoryStream> GetPersonsCSV()
+        {
+            MemoryStream memoryStream = new MemoryStream();
+            StreamWriter streamWriter = new StreamWriter(memoryStream);
+            CsvWriter csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture, leaveOpen:true);
+
+            csvWriter.WriteHeader<PersonResponse>();
+
+            csvWriter.NextRecord();
+
+            List<PersonResponse> persons = _db.Persons
+                .Include("Country")
+                .Select(temp => temp.ToPersonResponse()).ToList();
+           csvWriter.WriteRecords(persons);
+
+            memoryStream.Position = 0;
+            return Task.FromResult(memoryStream);
+            
         }
     }
 }

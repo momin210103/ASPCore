@@ -3,10 +3,12 @@
 @{
 	ViewBag.Title = "Persons";
 }
-<form action ="~/persons/index" method="get">
+<form asp-controller ="Persons"  asp-action ="Index" method="get">
 <h1>Persons</h1>
 
 	<a href="~/persons/create">Create Person</a>
+	<a class="ml" href="~/personspdf">Download as PDF</a>
+	<a class="ml" href="~/peronscsv">Download as CSV</a>
 
 <div class="box flex">
 	<div class="flex-1">

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Rotativa.AspNetCore;
 using ServiceContracts;
 using ServiceContracts.DTO;
+using System.IO;
 
 namespace CRUDExample.Controllers
 {
@@ -74,6 +76,37 @@ namespace CRUDExample.Controllers
             return RedirectToAction("Index", "Persons");
 
 
+        }
+
+
+        [Route("/personspdf")]
+        public IActionResult PersonsPDF()
+        {
+            //Get list of Persons
+
+           List<PersonResponse> persons =  _personsService.GetAllPersons();
+            //Return View as pdf
+            return new ViewAsPdf("PersonsPDF", persons, ViewData)
+            {
+                //Here Addition property of Pdf page
+                PageMargins = new Rotativa.AspNetCore.Options.Margins()
+                {
+                    Top = 20,
+                    Right = 20,
+                    Bottom = 20,
+                    Left = 20
+                },
+                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Landscape
+            };
+        }
+
+        [Route("/peronscsv")]
+
+        public async Task<IActionResult> PersonsCSV()
+        {
+            MemoryStream memoryStream = await _personsService.GetPersonsCSV();
+
+            return File(memoryStream,"application/octet-stream","persons.csv");
         }
 
 
