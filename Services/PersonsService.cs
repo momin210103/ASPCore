@@ -9,6 +9,7 @@ using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 using Services.Helpers;
 using System.IO;
+using OfficeOpenXml;
 
 
 namespace Services
@@ -242,6 +243,49 @@ namespace Services
             memoryStream.Position = 0;
             return Task.FromResult(memoryStream);
             
+        }
+
+        public Task<MemoryStream> GetPersonsExcel()
+        {
+           
+            MemoryStream memoryStream = new MemoryStream();
+            
+
+            using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+            {
+                ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets.Add("PersonsSheet");
+                workSheet.Cells["A1"].Value = "Person Name";
+                workSheet.Cells["B1"].Value = "Email";
+                workSheet.Cells["C1"].Value = "Date of Birth";
+                workSheet.Cells["D1"].Value = "Age";
+                workSheet.Cells["E1"].Value = "Gender";
+                workSheet.Cells["F1"].Value = "Country";
+                workSheet.Cells["G1"].Value = "Address";
+                workSheet.Cells["H1"].Value = "Receive News Letters";
+
+                int row = 2;
+                List<PersonResponse>persons = _db.Persons.Include("Country").Select(temp => temp.ToPersonResponse()).ToList();
+
+                foreach (PersonResponse person in persons)
+                {
+                    workSheet.Cells[row, 1].Value = person.PersonName;
+                    workSheet.Cells[row, 2].Value = person.Email;
+                    if(person.DateOfBirth.HasValue)
+                        workSheet.Cells[row, 3].Value = person.DateOfBirth.Value.ToString("yyyy-MM-dd");
+                    workSheet.Cells[row, 4].Value = person.Age;
+                    workSheet.Cells[row, 5].Value = person.Gender;
+                    workSheet.Cells[row, 6].Value = person.Country;
+                    workSheet.Cells[row, 7].Value = person.Address;
+                    workSheet.Cells[row, 8].Value = person.ReceiveNewsLetters;
+
+                    row++;
+                }
+                workSheet.Cells[$"A1:H{row}"].AutoFitColumns();
+                excelPackage.Save();
+
+            }
+            memoryStream.Position = 0;
+            return Task.FromResult(memoryStream);
         }
     }
 }
